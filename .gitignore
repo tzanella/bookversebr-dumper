@@ -1,0 +1,8 @@
+node_modules/
+.env
+session.txt
+*.session
+*.db
+*.db-wal
+*.db-shm
+downloads/

@@ -1,0 +1,26 @@
+{
+  "name": "bookversebr-bot-telegram",
+  "version": "1.0.0",
+  "description": "Bot em Node.js para coleta, catalogação via OpenLibrary e reenvio de livros .epub no Telegram",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "login": "node login.js"
+  },
+  "keywords": [
+    "telegram",
+    "mtproto",
+    "gramjs",
+    "openlibrary",
+    "epub",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^17.4.2",
+    "telegram": "^2.26.22"
+  }
+}
