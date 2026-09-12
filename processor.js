@@ -24,6 +24,33 @@ function sanitizeFilename(filename) {
   return filename.replace(/[/\\?%*:|"<>]/g, '_');
 }
 
+function sanitizeLocalFilename(filename) {
+  if (!filename) {
+    return filename;
+  }
+
+  const safe = sanitizeFilename(filename);
+  let ext = '';
+  let base = safe;
+
+  if (safe.toLowerCase().endsWith('.epub')) {
+    ext = '.epub';
+    base = safe.slice(0, -5);
+  }
+
+  base = base.replace(/^_bookversebr_/i, '');
+  base = base.replace(/\s*[\(\[]?\s*z[\s\-_]*library\s*[\)\]]?/gi, '');
+  base = base.replace(/\(\s*\)|\[\s*\]/g, '');
+  base = base.replace(/[\s_]+/g, ' ').trim();
+  base = base.replace(/^[-_\s]+|[-_\s]+$/g, '');
+
+  if (!base) {
+    base = 'livro';
+  }
+
+  return `_bookversebr_${base}${ext}`;
+}
+
 async function processSourceGroup(client, config) {
   const { sourceGroupId, destGroupId, downloadDir, delayMs, limit } = config;
   const resolvedDownloadDir = path.resolve(process.cwd(), downloadDir);
@@ -96,11 +123,8 @@ async function processSourceGroup(client, config) {
       const metadata = await fetchBookMetadata(originalFilename, delayMs);
       console.log(`[OpenLibrary] Metadados: Título="${metadata.title}" | Autor="${metadata.author || 'N/A'}" | Ano=${metadata.year || 'N/A'} | ISBN=${metadata.isbn || 'N/A'}`);
 
-      const safeOriginalName = sanitizeFilename(originalFilename);
-      const prefixedName = safeOriginalName.startsWith('_bookversebr_')
-        ? safeOriginalName
-        : `_bookversebr_${safeOriginalName}`;
-      const localFilePath = path.resolve(resolvedDownloadDir, prefixedName);
+      const localFileName = sanitizeLocalFilename(originalFilename);
+      const localFilePath = path.resolve(resolvedDownloadDir, localFileName);
 
       console.log(`[Telegram] Baixando arquivo para: ${localFilePath}...`);
       await downloadEpubFile(client, message, localFilePath);
@@ -112,6 +136,10 @@ async function processSourceGroup(client, config) {
         author: metadata.author,
         year: metadata.year,
         isbn: metadata.isbn,
+        description: metadata.description,
+        tags: metadata.tags,
+        cover_url: metadata.cover_url,
+        cover_id: metadata.cover_id,
         file_path: localFilePath,
         telegram_group_id: null,
         telegram_message_id: null,
@@ -195,5 +223,6 @@ async function run(options = {}) {
 
 module.exports = {
   run,
-  processSourceGroup
+  processSourceGroup,
+  sanitizeLocalFilename
 };

@@ -14,6 +14,10 @@ function initBooksTable(db) {
       author TEXT,
       year INTEGER,
       isbn TEXT,
+      description TEXT,
+      tags TEXT,
+      cover_url TEXT,
+      cover_id INTEGER,
       file_path TEXT,
       telegram_group_id TEXT,
       telegram_message_id INTEGER,
@@ -23,9 +27,22 @@ function initBooksTable(db) {
   `);
 
   const columns = database.prepare('PRAGMA table_info(books)').all();
-  const hasFileUniqueId = columns.some(col => col.name === 'telegram_file_unique_id');
-  if (!hasFileUniqueId) {
+  const columnNames = new Set(columns.map(col => col.name));
+
+  if (!columnNames.has('telegram_file_unique_id')) {
     database.exec('ALTER TABLE books ADD COLUMN telegram_file_unique_id TEXT;');
+  }
+  if (!columnNames.has('description')) {
+    database.exec('ALTER TABLE books ADD COLUMN description TEXT;');
+  }
+  if (!columnNames.has('tags')) {
+    database.exec('ALTER TABLE books ADD COLUMN tags TEXT;');
+  }
+  if (!columnNames.has('cover_url')) {
+    database.exec('ALTER TABLE books ADD COLUMN cover_url TEXT;');
+  }
+  if (!columnNames.has('cover_id')) {
+    database.exec('ALTER TABLE books ADD COLUMN cover_id INTEGER;');
   }
 
   database.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_books_telegram_file_unique_id ON books(telegram_file_unique_id);');
@@ -118,6 +135,10 @@ function insertBook(bookData) {
       author,
       year,
       isbn,
+      description,
+      tags,
+      cover_url,
+      cover_id,
       file_path,
       telegram_group_id,
       telegram_message_id,
@@ -129,6 +150,10 @@ function insertBook(bookData) {
       @author,
       @year,
       @isbn,
+      @description,
+      @tags,
+      @cover_url,
+      @cover_id,
       @file_path,
       @telegram_group_id,
       @telegram_message_id,
@@ -143,6 +168,10 @@ function insertBook(bookData) {
     author: bookData.author || null,
     year: bookData.year !== undefined && bookData.year !== null ? Number(bookData.year) : null,
     isbn: bookData.isbn || null,
+    description: bookData.description || null,
+    tags: bookData.tags || null,
+    cover_url: bookData.cover_url || null,
+    cover_id: bookData.cover_id !== undefined && bookData.cover_id !== null ? Number(bookData.cover_id) : null,
     file_path: bookData.file_path || null,
     telegram_group_id: bookData.telegram_group_id !== undefined && bookData.telegram_group_id !== null ? String(bookData.telegram_group_id) : null,
     telegram_message_id: bookData.telegram_message_id !== undefined && bookData.telegram_message_id !== null ? Number(bookData.telegram_message_id) : null,
